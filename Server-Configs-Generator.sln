@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30413.136
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server-Configs-Converter", "Server-Configs-Generator\Server-Configs-Converter.csproj", "{514ED0F4-3366-4E06-A630-0C9FDA05D4C3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server-Configs-Converter", "Server-Configs-Converter\Server-Configs-Converter.csproj", "{514ED0F4-3366-4E06-A630-0C9FDA05D4C3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
