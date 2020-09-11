@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.30413.136
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server-Configs-Converter", "Server-Configs-Converter\Server-Configs-Converter.csproj", "{514ED0F4-3366-4E06-A630-0C9FDA05D4C3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VmfToConsoleT", "VmfToConsoleT\VmfToConsoleT.csproj", "{277527DB-A91F-42C8-A575-21807E802534}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{514ED0F4-3366-4E06-A630-0C9FDA05D4C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{514ED0F4-3366-4E06-A630-0C9FDA05D4C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{514ED0F4-3366-4E06-A630-0C9FDA05D4C3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{277527DB-A91F-42C8-A575-21807E802534}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{277527DB-A91F-42C8-A575-21807E802534}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{277527DB-A91F-42C8-A575-21807E802534}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{277527DB-A91F-42C8-A575-21807E802534}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
