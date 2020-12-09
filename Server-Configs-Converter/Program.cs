@@ -251,6 +251,7 @@ namespace Kxnrl.FyS.ConfigConverter
                 // Global
                 new Variable("mp_timelimit", "15", "Global", "地图时间 (分钟)", "1", "60"),
                 new Variable("mp_roundtime", "30", "Global", "回合时间 (分钟)", "1", "60"),
+                new Variable("rank_ze_map_tier", "1", "Global", "地图等级 (1-6)", "1", "6"),
 
                 // Vote
                 new Variable("vips_map_extend_times", "2", "Vote", "VIP延长投票 (次)", "0", "2"),
@@ -282,7 +283,7 @@ namespace Kxnrl.FyS.ConfigConverter
                 // Boss HP
                 new Variable("ze_bosshp_boss_money_bonus", "10", "BossHP", "每次攻击BOSS时获得的金钱 ($)", "1", "100"),
                 new Variable("ze_bosshp_display_breakable", "0", "BossHP", "显示可破坏实体的HP (开关)", "0", "1"),
-                new Variable("ze_bosshp_auto_detect", "0", "BossHP", "配置缺失时自动识别BossHP (开关)", "0", "1"),
+                new Variable("ze_bosshp_vscript_creation", "0", "BossHP", "地图有使用Vscript创建counter (开关)", "0", "1"),
 
                 // entWatch
                 new Variable("ze_newbee_protection_point", "10", "entWatch", "拾取神器所需的最低云点 (云点)", "1", "10000"),
@@ -318,7 +319,7 @@ namespace Kxnrl.FyS.ConfigConverter
                 new Variable("ze_maptext_textholdtime", "10.0", "MapText", "文本在Hud上停留的时间 (秒)", "1.0", "3600.0"),
 
                 // User Message
-                new Variable("ze_usermessage_shake", "0", "UserMessage", "地图晃动 (开关)", "0", "1"),
+                //new Variable("ze_usermessage_shake", "0", "UserMessage", "地图晃动 (开关)", "0", "1"),
 
                 // Grenade
                 new Variable("ze_grenade_nade_duration", "1.0", "Grenade", "高爆持续时间<燃烧模式为燃烧时间, 减速模式为减速时间, 击退模式无效> (秒)", "0.0", "60.0"),
@@ -352,7 +353,7 @@ namespace Kxnrl.FyS.ConfigConverter
                 new Variable("sm_boomer_distance", "300.0", "ZSkill", "唾液射程 (Unit)", "1.0", "999.9"),
                 new Variable("sm_smoker_distance", "500.0", "ZSkill", "勾搭范围 (Unit)", "1.0", "9999.9"),
                 new Variable("sm_blader_damage", "60.0", "ZSkill", "跳刀伤害 (Unit)", "1.0", "5000.0"),
-                new Variable("sm_farter_distance", "350.0", "ZSkill", "毒言半径 (Unit)", "1.0", "9999.9"),
+                new Variable("sm_farter_distance", "350.0", "ZSkill", "毒烟半径 (Unit)", "1.0", "9999.9"),
             };
 
             //new Variable("", "", "", "", "", ""),
