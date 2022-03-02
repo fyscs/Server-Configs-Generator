@@ -1,4 +1,7 @@
-﻿using System;
+﻿using Gameloop.Vdf;
+using Gameloop.Vdf.JsonConverter;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -11,6 +14,7 @@ namespace Kxnrl.FyS.VmfToConsoleT
         static readonly string myself = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
         static readonly string worker = Path.Combine(myself, "worker");
         static readonly string output = Path.Combine(myself, "output");
+        static readonly string exists = Path.Combine(myself, "exists");
 
         #region FGD Outputs
         static readonly List<string> outputs = new List<string>
@@ -308,8 +312,24 @@ namespace Kxnrl.FyS.VmfToConsoleT
 
             Directory.CreateDirectory(worker);
             Directory.CreateDirectory(output);
+            Directory.CreateDirectory(exists);
 
+            // parse Vmf
             Directory.GetFiles(worker, "*.vmf", SearchOption.TopDirectoryOnly).ToList().ForEach(vmf =>
+            {
+                try
+                {
+                    ParseVmf(vmf);
+                }
+                catch (Exception e)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine($"Failed to parse file {vmf} => {e.Message}{Environment.NewLine}{e.StackTrace}");
+                }
+            });
+
+            // parse lump
+            Directory.GetFiles(worker, "*.lump", SearchOption.TopDirectoryOnly).ToList().ForEach(vmf =>
             {
                 try
                 {
@@ -374,8 +394,16 @@ namespace Kxnrl.FyS.VmfToConsoleT
                 return;
             }
 
-            File.WriteAllText(Path.Combine(output, Path.GetFileNameWithoutExtension(path) + ".txt"), 
-                TranslationsToKeyValues(list), 
+            if (path.Contains(".bsp"))
+                path = path.Replace(".bsp", "");
+
+            var outFile = Path.Combine(output, Path.GetFileNameWithoutExtension(path) + ".txt");
+            var extFile = Path.Combine(exists, Path.GetFileNameWithoutExtension(path) + ".txt");
+
+            var text = list.Distinct().OrderBy(x => x).ToList();
+
+            File.WriteAllText(outFile, 
+                TranslationsToKeyValues(text, ReadExistsTranslations(extFile), Path.GetFileNameWithoutExtension(outFile)), 
                 new UTF8Encoding(false));
         }
 
@@ -398,27 +426,127 @@ namespace Kxnrl.FyS.VmfToConsoleT
             return new string[] { };
         }
 
-        private static string TranslationsToKeyValues(List<string> transTxt)
+        private static Dictionary<string, Console_T> ReadExistsTranslations(string path)
+        {
+            if (!File.Exists(path))
+                return null;
+
+            var text = File.ReadAllText(path);
+
+            var vdf = VdfConvert.Deserialize(text);
+
+            return vdf.Value.ToJson(new VdfJsonConversionSettings
+            {
+                ObjectDuplicateKeyHandling = DuplicateKeyHandling.Replace,
+                ValueDuplicateKeyHandling = DuplicateKeyHandling.Replace
+            }).ToObject<Dictionary<string, Console_T>>();
+        }
+
+        private static string TranslationsToKeyValues(List<string> transTxt, Dictionary<string, Console_T> translationExists, string map)
         {
             var text = "\"Console_T\"" + Environment.NewLine + "{" + Environment.NewLine;
 
+            text += "    // Console SayText i18n file generator." + Environment.NewLine;
+            text += "    // Copyright 2022 Kyle 'Kxnrl' Frankiss " + Environment.NewLine;
+            text += "    // https://github.com/fys-csgo/Server-Configs-Generator" + Environment.NewLine;
+            text += Environment.NewLine;
+
             text += "    // 可用字段" + Environment.NewLine;
-            text += "    // \"blocked\" // 屏蔽本句输出" + Environment.NewLine;
-            text += "    // \"command\" // 服务器执行指令" + Environment.NewLine;
-            text += "    // \"countdown\" // 添加特殊的独立的倒计时" + Environment.NewLine;
+            text += "    // \"blocked\"    // 屏蔽本句输出" + Environment.NewLine;
+            text += "    // \"cleartext\"  // 清除所有HUD文本" + Environment.NewLine;
+            text += "    // \"cleartimer\" // 清除所有倒计时" + Environment.NewLine;
+            text += "    // \"countdown\"  // 添加特殊的独立的倒计时" + Environment.NewLine;
+            text += Environment.NewLine;
+            //text += "    // \"command\"    // 服务器执行指令" + Environment.NewLine;
 
             transTxt.Distinct().ToList().ForEach(line =>
             {
-                text += Environment.NewLine;
-                text += "    " + "\"" + line + "\"" + Environment.NewLine;
-                text += "    " + "{" + Environment.NewLine;
-                text += "    " + "    " + "\"chi\"" + " \"" + "** **" + "\"" + Environment.NewLine;
-                text += "    " + "}" + Environment.NewLine;
+                if (translationExists != null && translationExists.TryGetValue(line, out var trans))
+                {
+                    text += Environment.NewLine;
+                    text += "    " + "\"" + line + "\"" + Environment.NewLine;
+                    text += "    " + "{" + Environment.NewLine;
 
+                    if (trans.Translation.Length > 0)
+                    {
+                        text += "    " + "    " + "\"chi\"" + " \"" + trans.Translation + "\"" + Environment.NewLine;
+                    }
+                    else
+                    {
+                        text += "    " + "    " + "\"chi\"" + " \"" + "__null__" + "\"" + Environment.NewLine;
+                    }
+
+                    if (trans.Blocked.HasValue)
+                    {
+                        text += "    " + "    " + "\"blocked\"" + " \"" + (trans.Blocked.Value ? "1" : "0") + "\"" + Environment.NewLine;
+                    }
+
+                    if (trans.ClearText.HasValue)
+                    {
+                        text += "    " + "    " + "\"cleartext\"" + " \"" + (trans.ClearText.Value ? "1" : "0") + "\"" + Environment.NewLine;
+                    }
+
+                    if (trans.ClearTimer.HasValue)
+                    {
+                        text += "    " + "    " + "\"cleartimer\"" + " \"" + (trans.ClearTimer.Value ? "1" : "0") + "\"" + Environment.NewLine;
+                    }
+
+                    if (trans.Countdown.HasValue)
+                    {
+                        text += "    " + "    " + "\"countdown\"" + " \"" + trans.Countdown.Value + "\"" + Environment.NewLine;
+                    }
+
+                    text += "    " + "}" + Environment.NewLine;
+                }
+                else
+                {
+                    text += Environment.NewLine;
+                    text += "    " + "\"" + line + "\"" + Environment.NewLine;
+                    text += "    " + "{" + Environment.NewLine;
+                    text += "    " + "    " + "\"chi\"" + " \"" + "__null__" + "\"" + Environment.NewLine;
+                    text += "    " + "}" + Environment.NewLine;
+
+                    Console.ForegroundColor = ConsoleColor.DarkCyan;
+                    Console.WriteLine($"Failed to find [[[{line}]]] in <<<{map}>>>");
+                }
             });
 
             text += Environment.NewLine + "}";
             return text;
+        }
+
+        public struct Console_T
+        {
+            [JsonProperty("command", DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
+            public string Command { get; set; }
+            [JsonProperty("blocked", DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore), JsonConverter(typeof(BoolConverter))]
+            public bool? Blocked { get; set; }
+            [JsonProperty("cleartext", DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore), JsonConverter(typeof(BoolConverter))]
+            public bool? ClearText { get; set; }
+            [JsonProperty("cleartimer", DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore), JsonConverter(typeof(BoolConverter))]
+            public bool? ClearTimer { get; set; }
+            [JsonProperty("countdown", DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
+            public int? Countdown { get; set; }
+            [JsonProperty("chi")]
+            public string Translation { get; set; }
+        }
+
+        public class BoolConverter : JsonConverter
+        {
+            public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+            {
+                writer.WriteValue(((bool)value) ? 1 : 0);
+            }
+
+            public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+            {
+                return reader.Value.ToString() == "1";
+            }
+
+            public override bool CanConvert(Type objectType)
+            {
+                return objectType == typeof(bool);
+            }
         }
     }
 }
