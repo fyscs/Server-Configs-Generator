@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VmfToConsoleT", "VmfToConso
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BspToConsoleT", "BspToConsoleT\BspToConsoleT.csproj", "{9AA3DFB3-5892-43AB-B70D-B1856FDBBBFE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConfigReFormatter", "ConfigReFormatter\ConfigReFormatter.csproj", "{E4C32D18-2B86-4578-A5A2-62B4FF45E8A1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{9AA3DFB3-5892-43AB-B70D-B1856FDBBBFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9AA3DFB3-5892-43AB-B70D-B1856FDBBBFE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9AA3DFB3-5892-43AB-B70D-B1856FDBBBFE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E4C32D18-2B86-4578-A5A2-62B4FF45E8A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E4C32D18-2B86-4578-A5A2-62B4FF45E8A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E4C32D18-2B86-4578-A5A2-62B4FF45E8A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E4C32D18-2B86-4578-A5A2-62B4FF45E8A1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
