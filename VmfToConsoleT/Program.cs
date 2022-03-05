@@ -356,11 +356,14 @@ namespace Kxnrl.FyS.VmfToConsoleT
             File.ReadAllLines(path, Encoding.UTF8).ToList().ForEach(line =>
             {
                 // is not say hook
-                if (!line.Contains("Command") || !line.Contains("say "))
+                if (!line.Contains("Command") || !line.Contains("say ") || !line.Contains("sm_say"))
                 {
                     // skip line
                     return;
                 }
+
+                if (line.Contains("sm_say"))
+                    line = line.Replace("sm_say", "say");
 
                 //"OnTrigger" "serverCommandsay ***YOU TOOK TOO LONG - NUKING HUMANS***0-1"
 
