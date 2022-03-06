@@ -153,6 +153,16 @@ namespace ConfigReFormatter
                     text += $"        \"containerid\"       \"{entity.ContainerId}\"" + Environment.NewLine;
                 }
 
+                if (entity.Cooldown.GetValueOrDefault(0) > 0)
+                {
+                    text += $"        \"cooldown\"          \"{entity.Cooldown}\"" + Environment.NewLine;
+                }
+
+                if (entity.MaxUses.GetValueOrDefault(0) > 0)
+                {
+                    text += $"        \"maxuses\"           \"{entity.MaxUses}\"" + Environment.NewLine;
+                }
+
                 if (entity.Startcd.GetValueOrDefault(0) > 0)
                 {
                     text += $"        \"startcd\"           \"{entity.Startcd}\"" + Environment.NewLine;
