@@ -27,6 +27,8 @@ namespace BspToConsoleT
                 Environment.Exit(1);
             }
 
+            //var file = @"E:\Desktop\ze_roof_adventure_v8f.bsp";
+
             try
             {
                 Console.Title = "Bsp翻译文件导出 by Kyle -> " + Path.GetFileNameWithoutExtension(file);

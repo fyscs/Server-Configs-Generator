@@ -13,10 +13,15 @@ namespace BspToConsoleT
             var text = lump.Split('\n');
             var list = new List<string>();
 
-            text.ToList().ForEach(line =>
+            //"OnTrigger" "serverCommandsay ***YOU TOOK TOO LONG - NUKING HUMANS***0-1"
+            //"OnTrigger" "boss_attack_caseAddOutputOnCase07 servercommand:Command:say ***Rock monster will use backward-push in 3s!***:0.00:0 01"
+
+            text.ToList().ForEach(current =>
             {
+                var line = string.Copy(current);
+
                 // is not say hook
-                if (!line.Contains("Command") || !line.Contains("say ") || !line.Contains("sm_say"))
+                if (!line.Contains("Command") || !line.Contains("say "))
                 {
                     // skip line
                     return;
@@ -25,29 +30,38 @@ namespace BspToConsoleT
                 if (line.Contains("sm_say"))
                     line = line.Replace("sm_say", "say");
 
-                //"OnTrigger" "serverCommandsay ***YOU TOOK TOO LONG - NUKING HUMANS***0-1"
-
                 var raw = line.Split(new[] { "\" \"" }, StringSplitOptions.None);
                 if (raw.Length != 2)
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"Error parse line key values -> [{line}]");
+                    Console.WriteLine($"Error parse line key values -> [{current}]");
                     return;
                 }
 
-                //  serverCommandsay ***YOU TOOK TOO LONG - NUKING HUMANS***0-1
                 line = raw[1].Substring(0, raw[1].Length - 1);
 
-                var action = SplitEntityAction(line);
+                var action = SplitEntityAction(line.Substring(1, line.Length - 2));
 
                 if (action.Length != 5)
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"Error parse line to action -> [{line}]");
+                    Console.WriteLine($"Error parse line to action -> [{current}]");
                     return;
                 }
 
-                list.Add(action[2].Substring(4));
+                var text = action[2];
+
+                if (action[1].ToLower().Equals("addoutput"))
+                    text = PraseOutput(action[2].TrimEnd());
+
+                if (string.IsNullOrEmpty(text))
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine($"Error parse line to command -> [{current}]");
+                    return;
+                }
+
+                list.Add(text.Substring(4));
             });
 
             if (list.Count == 0)
@@ -60,21 +74,30 @@ namespace BspToConsoleT
             return list.Distinct().OrderBy(x => x).ToList();
         }
 
+        private static string PraseOutput(string line)
+        {
+            var firstSpace = line.IndexOf(' ');
+
+            var targetname = line.Substring(0, firstSpace-1).Trim();
+            var param = line.Substring(firstSpace).Trim();
+
+            var action = SplitEntityAction(param); //param.Split(new char[] { delimiter }, StringSplitOptions.None);
+            if (action.Length == 0)
+                return string.Empty;
+
+            return action[2];
+        }
+
         private static string[] SplitEntityAction(string thval)
         {
-            string[] text;
+            var delimiters = new char[] {'', ',', ';', ':'};
 
-            text = thval.Substring(1, thval.Length - 2).Split(new[] { "" }, StringSplitOptions.None); // 0x1b
-            if (text.Length == 5)
-                return text;
-
-            text = thval.Substring(1, thval.Length - 2).Split(new[] { "," }, StringSplitOptions.None);
-            if (text.Length == 5)
-                return text;
-
-            text = thval.Substring(1, thval.Length - 2).Split(new[] { ";" }, StringSplitOptions.None);
-            if (text.Length == 5)
-                return text;
+            foreach (var delimiter in delimiters)
+            {
+                var text = thval.Split(new char [] { delimiter }, StringSplitOptions.None);
+                if (text.Length == 5)
+                    return text;
+            }
 
             return new string[] { };
         }
@@ -105,6 +128,8 @@ namespace BspToConsoleT
                 text += "    " + "}" + Environment.NewLine;
 
             });
+
+            text += Environment.NewLine + "}";
 
             File.WriteAllText(path, text, Encoding.UTF8);
         }

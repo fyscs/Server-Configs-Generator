@@ -350,13 +350,13 @@ namespace Kxnrl.FyS.VmfToConsoleT
         private static void ParseVmf(string path)
         {
             var list = new List<string>();
-            //text = thval.Substring(1, thval.Length - 2).Split(new[] { "" }, StringSplitOptions.None); // 0x1b
-            //text = thval.Substring(1, thval.Length - 2).Split(new[] { ";" }, StringSplitOptions.None); // 0x1b
-            //text = thval.Substring(1, thval.Length - 2).Split(new[] { "," }, StringSplitOptions.None);
-            File.ReadAllLines(path, Encoding.UTF8).ToList().ForEach(line =>
+
+            File.ReadAllLines(path, Encoding.UTF8).ToList().ForEach(current =>
             {
+                var line = string.Copy(current);
+
                 // is not say hook
-                if (!line.Contains("Command") || !line.Contains("say ") || !line.Contains("sm_say"))
+                if (!line.Contains("Command") || !line.Contains("say "))
                 {
                     // skip line
                     return;
@@ -365,29 +365,38 @@ namespace Kxnrl.FyS.VmfToConsoleT
                 if (line.Contains("sm_say"))
                     line = line.Replace("sm_say", "say");
 
-                //"OnTrigger" "serverCommandsay ***YOU TOOK TOO LONG - NUKING HUMANS***0-1"
-
                 var raw = line.Split(new[] { "\" \"" }, StringSplitOptions.None);
                 if (raw.Length != 2)
                 {
-                    Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.WriteLine("[{1}] Error parse line key values -> [{0}]", line, Path.GetFileNameWithoutExtension(path));
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine($"Error parse line key values -> [{current}]");
                     return;
                 }
 
-                //  serverCommandsay ***YOU TOOK TOO LONG - NUKING HUMANS***0-1
                 line = raw[1].Substring(0, raw[1].Length - 1);
 
-                var action = SplitEntityAction(line);
+                var action = SplitEntityAction(line.Substring(1, line.Length - 2));
 
                 if (action.Length != 5)
                 {
-                    Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.WriteLine("[{1}] Error parse line to action -> [{0}]", line, Path.GetFileNameWithoutExtension(path));
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine($"Error parse line to action -> [{current}]");
                     return;
                 }
 
-                list.Add(action[2].Substring(4));
+                var text = action[2];
+
+                if (action[1].ToLower().Equals("addoutput"))
+                    text = PraseOutput(action[2].TrimEnd());
+
+                if (string.IsNullOrEmpty(text))
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine($"Error parse line to command -> [{current}]");
+                    return;
+                }
+
+                list.Add(text.Substring(4));
             });
 
             if (list.Count == 0)
@@ -403,28 +412,37 @@ namespace Kxnrl.FyS.VmfToConsoleT
             var outFile = Path.Combine(output, Path.GetFileNameWithoutExtension(path) + ".txt");
             var extFile = Path.Combine(exists, Path.GetFileNameWithoutExtension(path) + ".txt");
 
-            var text = list.Distinct().OrderBy(x => x).ToList();
+            var translations = list.Distinct().OrderBy(x => x).ToList();
 
             File.WriteAllText(outFile, 
-                TranslationsToKeyValues(text, ReadExistsTranslations(extFile), Path.GetFileNameWithoutExtension(outFile)), 
+                TranslationsToKeyValues(translations, ReadExistsTranslations(extFile), Path.GetFileNameWithoutExtension(outFile)), 
                 new UTF8Encoding(false));
+        }
+
+        private static string PraseOutput(string line)
+        {
+            var firstSpace = line.IndexOf(' ');
+
+            var targetname = line.Substring(0, firstSpace - 1).Trim();
+            var param = line.Substring(firstSpace).Trim();
+
+            var action = SplitEntityAction(param); //param.Split(new char[] { delimiter }, StringSplitOptions.None);
+            if (action.Length == 0)
+                return string.Empty;
+
+            return action[2];
         }
 
         private static string[] SplitEntityAction(string thval)
         {
-            string[] text;
+            var delimiters = new char[] { '', ',', ';', ':' };
 
-            text = thval.Substring(1, thval.Length - 2).Split(new[] { "" }, StringSplitOptions.None); // 0x1b
-            if (text.Length == 5)
-                return text;
-
-            text = thval.Substring(1, thval.Length - 2).Split(new[] { "," }, StringSplitOptions.None);
-            if (text.Length == 5)
-                return text;
-
-            text = thval.Substring(1, thval.Length - 2).Split(new[] { ";" }, StringSplitOptions.None);
-            if (text.Length == 5)
-                return text;
+            foreach (var delimiter in delimiters)
+            {
+                var text = thval.Split(new char[] { delimiter }, StringSplitOptions.None);
+                if (text.Length == 5)
+                    return text;
+            }
 
             return new string[] { };
         }
