@@ -61,7 +61,7 @@ namespace BspToConsoleT
                     return;
                 }
 
-                list.Add(text.Substring(4));
+                list.Add(text.Substring(4).Trim());
             });
 
             if (list.Count == 0)
