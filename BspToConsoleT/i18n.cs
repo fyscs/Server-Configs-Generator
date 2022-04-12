@@ -131,7 +131,7 @@ namespace BspToConsoleT
 
             text += Environment.NewLine + "}";
 
-            File.WriteAllText(path, text, Encoding.UTF8);
+            File.WriteAllText(path, text, new UTF8Encoding(false));
         }
     }
 }
