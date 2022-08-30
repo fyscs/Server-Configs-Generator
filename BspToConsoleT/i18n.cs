@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -78,7 +78,7 @@ namespace BspToConsoleT
         {
             var firstSpace = line.IndexOf(' ');
 
-            var targetname = line.Substring(0, firstSpace-1).Trim();
+            //var targetname = line.Substring(0, firstSpace - 1).Trim();
             var param = line.Substring(firstSpace).Trim();
 
             var action = SplitEntityAction(param); //param.Split(new char[] { delimiter }, StringSplitOptions.None);
@@ -90,11 +90,11 @@ namespace BspToConsoleT
 
         private static string[] SplitEntityAction(string thval)
         {
-            var delimiters = new char[] {'', ',', ';', ':'};
+            var delimiters = new char[] { '', ',', ';', ':' };
 
             foreach (var delimiter in delimiters)
             {
-                var text = thval.Split(new char [] { delimiter }, StringSplitOptions.None);
+                var text = thval.Split(new char[] { delimiter }, StringSplitOptions.None);
                 if (text.Length == 5)
                     return text;
             }
@@ -119,8 +119,16 @@ namespace BspToConsoleT
             text += Environment.NewLine;
             //text += "    // \"command\"    // 服务器执行指令" + Environment.NewLine;
 
+            var keys = new List<string>();
+
             list.ForEach(line =>
             {
+                var key = line.ToLower();
+                if (keys.Contains(key))
+                    return;
+
+                keys.Add(key);
+
                 text += Environment.NewLine;
                 text += "    " + "\"" + line + "\"" + Environment.NewLine;
                 text += "    " + "{" + Environment.NewLine;

@@ -223,7 +223,7 @@ namespace Kxnrl.FyS.ConfigConverter
                 mapCmds.ForEach(cmd => { lines.Add(cmd.ToString()); });
                 lines.Add($"");
             }
-            
+
             lines.Add($"");
             lines.Add($"Echo \"Executed config for {map}.\"");
 

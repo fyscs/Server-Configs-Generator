@@ -1,4 +1,4 @@
-﻿using Gameloop.Vdf;
+using Gameloop.Vdf;
 using Gameloop.Vdf.JsonConverter;
 using Newtonsoft.Json;
 using System;
@@ -414,8 +414,8 @@ namespace Kxnrl.FyS.VmfToConsoleT
 
             var translations = list.Distinct().OrderBy(x => x).ToList();
 
-            File.WriteAllText(outFile, 
-                TranslationsToKeyValues(translations, ReadExistsTranslations(extFile), Path.GetFileNameWithoutExtension(outFile)), 
+            File.WriteAllText(outFile,
+                TranslationsToKeyValues(translations, ReadExistsTranslations(extFile), Path.GetFileNameWithoutExtension(outFile)),
                 new UTF8Encoding(false));
         }
 
@@ -480,8 +480,16 @@ namespace Kxnrl.FyS.VmfToConsoleT
             text += Environment.NewLine;
             //text += "    // \"command\"    // 服务器执行指令" + Environment.NewLine;
 
+            var keys = new List<string>();
+
             transTxt.Distinct().ToList().ForEach(line =>
             {
+                var key = line.ToLower();
+                if (keys.Contains(key))
+                    return;
+
+                keys.Add(key);
+
                 if (translationExists != null && translationExists.TryGetValue(line, out var trans))
                 {
                     text += Environment.NewLine;

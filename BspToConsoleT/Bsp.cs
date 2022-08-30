@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -82,7 +82,7 @@ namespace BspToConsoleT
             if (lump < 0 || lump >= Lumps.Length)
                 throw new ArgumentException($"Invalid lump {lump}");
 
-            var bytes = new byte[Lumps[lump].Length-1]; // 1 byte = null terminator
+            var bytes = new byte[Lumps[lump].Length - 1]; // 1 byte = null terminator
 
             File.Seek(Lumps[lump].Offset, SeekOrigin.Begin);
             await File.ReadAsync(bytes, 0, bytes.Length);
