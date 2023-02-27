@@ -61,7 +61,7 @@ namespace Kxnrl.FyS.ConfigConverter
 
     static class Program
     {
-        private const string Versioning = "v3";
+        private const string Versioning = "v4";
 
         private static readonly string MySelf = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
         private static readonly string Worker = Path.Combine(MySelf, "worker");
@@ -245,7 +245,6 @@ namespace Kxnrl.FyS.ConfigConverter
                 new Variable("mcr_map_extend_times", "2", "Vote", "MCR延长投票 (次)", "0", "2"),
 
                 // Misc
-                //new Variable("sv_falldamage_scale", "0", "Misc", "坠落伤害 (%)", "0.0", "3.0"),
                 new Variable("store_thirdperson_enabled", "1", "Misc", "第三人称视角控制 (开关)", "0", "1"),
 
                 // Core
@@ -254,43 +253,31 @@ namespace Kxnrl.FyS.ConfigConverter
                 new Variable("zr_infect_mzombie_respawn", "1", "Core", "尸变时传送回出生点 (开关)", "0", "1"),
                 new Variable("zr_infect_spawntime_max", "15", "Core", "尸变倒计时<须与zr_infect_spawntime_min同步> (秒)", "1", "90"),
                 new Variable("zr_infect_spawntime_min", "15", "Core", "尸变倒计时<须与zr_infect_spawntime_max同步> (秒)", "1", "90"),
-                //new Variable("zr_respawn_delay", "5", "Core", "死亡复活延迟 (秒)", "1", "10"),
                 new Variable("zr_knockback_multi", "1.0", "Core", "全局击退系数 (%)", "0.1", "1.5"),
-                //new Variable("zr_classes_csgo_knockback_airmultiplier", "0.6", "Core", "空中击退系数 (%)", "0.1", "1.5"),
-                //new Variable("zr_ztele_max_human", "1", "Core", "人类传送 (次)", "0", "3"),
-                //new Variable("zr_ztele_max_zombie", "1", "Core", "僵尸传送 (次)", "0", "3"),
 
                 // Rank
                 new Variable("ze_damage_zombie_cash", "0.4", "Rank", "伤害与金钱转化比例 ($)", "0.1", "3.0"),
-                new Variable("ze_damage_rank_points", "30000", "Rank", "伤害云点转化比例 (云点)", "5000.0", "99999.0"),
-                new Variable("ze_damage_shop_credit", "50000", "Rank", "伤害积分转化比例 (积分)", "5000.0", "99999.0"),
+                new Variable("ze_damage_rank_points", "30000", "Rank", "伤害云点转化比例 (云点)", "9999.0", "99999.0"),
+                new Variable("ze_damage_shop_credit", "50000", "Rank", "伤害积分转化比例 (积分)", "9999.0", "99999.0"),
                 new Variable("ze_credits_pass_round", "1", "Rank", "通关所获得的积分 (积分)", "1", "30"),
                 new Variable("rank_ze_win_points_humans", "", "Rank", "通关获得多少云点<人类>", "1", "30"),
 
                 // Boss HP
-                //new Variable("ze_bosshp_boss_money_bonus", "10", "BossHP", "每次攻击BOSS时获得的金钱 ($)", "1", "100"),
                 new Variable("ze_bosshp_display_breakable", "0", "BossHP", "显示可破坏实体的HP (开关)", "0", "1"),
-                new Variable("ze_bosshp_vscript_creation", "0", "BossHP", "地图有使用Vscript创建counter (开关)", "0", "1"),
+                new Variable("ze_bosshp_vscript_creation", "0", "BossHP", "地图有使用VScript创建counter (开关)", "0", "1"),
 
                 // entWatch
-                new Variable("ze_newbee_protection_point", "10", "entWatch", "拾取神器所需的最低云点 (云点)", "500", "10000"),
-                new Variable("ze_entwatch_require_client", "0", "entWatch", "xXx: DO NOT CHANGE THIS!!!", "0", "1"),
+                new Variable("ze_newbee_protection_point", "10", "EntWatch", "拾取神器所需的最低云点 (云点)", "500", "10000"),
+                new Variable("entwatch_require_client", "0", "EntWatch", "需要助手以拾取神器", "0", "1"),
+                new Variable("entwatch_allow_use_to_acquire", "0", "EntWatch", "允许按E键拾取神器 (开关)", "0", "1"),
+                new Variable("entwatch_auto_detect_physicsbox", "0", "EntWatch", "允许按E键拾取自动识别PhysicsBox (开关)", "0", "1"),
 
                 // Glows
-                new Variable("ze_buttons_glow_enabled", "1", "Glows", "按钮创建高亮透视鸡 (开关)", "0", "1"),
-
-                // Collision
-                //new Variable("ze_collision_checks", "0", "Collision", "根据距离自动识别适配Collision效果<该功能会带来CPU消耗> (开关)", "0", "1"),
-
-                // Hide
-                //new Variable("ze_extended_hide_entwatch_player", "1", "Hide", "持有神器的玩家会被透明化, 并且在僵尸视野中高亮并透视 (开关)", "0", "1"),
+                new Variable("ze_buttons_glow_enabled", "1", "Monitor", "按钮创建高亮透视鸡 (开关)", "0", "1"),
 
                 // Flash Nvg
                 new Variable("k_nv_enabled", "1", "FlashNvg", "夜视仪控制 (开关)", "0", "1"),
                 new Variable("k_fl_enabled", "1", "FlashNvg", "手电筒控制 (开关)", "0", "1"),
-
-                // MapMusic
-                //new Variable("mapmusic_min_length", "15.0", "MapMusic", "多少时长以上的音频会被判断为地图BGM, 低于的识别为音效 (秒)", "0.0", "30.0"),
 
                 // Save Level
                 new Variable("ze_savelevel_enable", "0", "SaveLevel", "保存地图分数 (开关)", "0", "1"),
@@ -298,53 +285,34 @@ namespace Kxnrl.FyS.ConfigConverter
                 new Variable("ze_savelevel_onuser", "0", "SaveLevel", "检测OnUser输出 (开关)", "0", "1"),
                 new Variable("ze_savelevel_multis", "0", "SaveLevel", "多重OnUser输出 (开关)", "0", "1"),
 
-                // Speed Mod
-                //new Variable("ze_speedmod_prefab_human", "280", "SpeedMod", "人类地速限制 (Unit)", "150", "3500"),
-                //new Variable("ze_speedmod_prefab_zombi", "300", "SpeedMod", "僵尸地速限制 (Unit)", "150", "3500"),
-
-                // Map Text
-                //new Variable("ze_maptext_maxcountdown", "90.0", "MapText", "最大倒计时时间<超过将转换为chat> (秒)", "5.0", "3600.0"),
-                //new Variable("ze_maptext_textholdtime", "10.0", "MapText", "文本在Hud上停留的时间 (秒)", "1.0", "3600.0"),
-
-                // User Message
-                //new Variable("ze_usermessage_shake", "0", "UserMessage", "地图晃动 (开关)", "0", "1"),
-
                 // Grenade
-                //new Variable("ze_grenade_nade_duration", "1.0", "Grenade", "高爆持续时间<燃烧模式为燃烧时间, 减速模式为减速时间, 击退模式无效> (秒)", "0.0", "60.0"),
-                //new Variable("ze_grenade_nade_cfthrust", "420", "Grenade", "高爆击退模式的击退力度 (Unit)", "0.0", "9999.9"),
                 new Variable("ze_grenade_nade_cfeffect", "1", "Grenade", "高爆模式, 0为禁用, 1 = 燃烧, 2 = 减速, 3 = 击退 (开关)", "0", "3"),
 
                 // Weapon
-                //new Variable("ze_weapons_startmoney", "8000", "Weapon", "每局开始时补给的金钱 ($)", "1", "8000"),
                 new Variable("ze_weapons_awp_counts", "5", "Weapon", "每局最大可购买的Awp数量 (把)", "1", "64"),
-                new Variable("ze_weapons_spawn_hegrenade", "1", "Weapon", "每局开始时补给的高爆数量 (个)", "0", "2"),
+                new Variable("ze_weapons_spawn_hegrenade", "1", "Weapon", "每局开始时补给的高爆数量 (个)", "0", "1"),
                 new Variable("ze_weapons_spawn_molotov", "0", "Weapon", "每局开始时补给的火瓶数量 (个)", "0", "1"),
                 new Variable("ze_weapons_spawn_decoy", "1", "Weapon", "每局开始时补给的冰冻数量 (个)", "0", "1"),
-                //new Variable("ze_weapons_spawn_healshot", "0", "Weapon", "每局开始时补给的血针数量 (支)", "0", "1"),
                 new Variable("ze_weapons_round_hegrenade", "3", "Weapon", "每局最多可购买的高爆数量 (个)", "-1", "15"),
                 new Variable("ze_weapons_round_molotov", "1", "Weapon", "每局最多可购买的火瓶数量 (个)", "-1", "10"),
                 new Variable("ze_weapons_round_decoy", "1", "Weapon", "每局最多可购买的冰冻数量 (个)", "-1", "10"),
                 new Variable("ze_weapons_round_flash", "1", "Weapon", "每局最多可购买的屏障数量 (个)", "-1", "10"),
-                //new Variable("ze_weapons_round_smoke", "1", "Weapon", "每局最多可购买的磁暴数量 (个)", "-1", "5"),
+                new Variable("ze_weapons_round_smoke", "1", "Weapon", "每局最多可购买的磁暴数量 (个)", "-1", "5"),
                 new Variable("ze_weapons_round_tagrenade", "1", "Weapon", "每局最多可购买的黑洞数量 (个)", "-1", "5"),
                 new Variable("ze_weapons_round_healshot", "1", "Weapon", "每局最多可购买的血针数量 (支)", "-1", "5"),
 
                 // ZSkill
-                //new Variable("sm_hunter_enabled", "1", "ZSkill", "闪灵技能 (开关)", "0", "1"),
-                //new Variable("sm_faster_enabled", "1", "ZSkill", "加速技能 (开关)", "0", "1"),
-                //new Variable("sm_boomer_enabled", "1", "ZSkill", "唾沫技能 (开关)", "0", "1"),
-                //new Variable("sm_smoker_enabled", "1", "ZSkill", "勾搭技能 (开关)", "0", "1"),
-                //new Variable("sm_blader_enabled", "1", "ZSkill", "刀锋技能 (开关)", "0", "1"),
-                //new Variable("sm_farter_enabled", "1", "ZSkill", "屁王技能 (开关)", "0", "1"),
                 new Variable("sm_hunter_leappower", "300.0", "ZSkill", "闪灵冲刺推力 (Unit)", "150.0", "500.0"),
                 new Variable("sm_faster_maxspeed", "1.4", "ZSkill", "加速暴发冲力 (%)", "1.1", "2.0"),
                 new Variable("sm_boomer_distance", "300.0", "ZSkill", "唾液射程 (Unit)", "100.0", "999.9"),
                 new Variable("sm_smoker_distance", "500.0", "ZSkill", "勾搭范围 (Unit)", "100.0", "9999.9"),
                 new Variable("sm_blader_damage", "60.0", "ZSkill", "跳刀伤害 (Unit)", "30.0", "5000.0"),
                 new Variable("sm_farter_distance", "350.0", "ZSkill", "毒烟半径 (Unit)", "50.0", "9999.9"),
+                new Variable("sm_finger_distance", "150.0", "ZSkill", "长手射程 (Unit)", "150.0", "9999.9"),
+                new Variable("sm_deimos_targetfx", "3", "ZSkill", "缴械连锁 (人)", "1", "8"),
+                new Variable("sm_deimos_droptype", "1", "ZSkill", "缴械掉落 (0-无, 1-主武器, 2-主武器+任意手雷, 3-主武器+所有手雷", "0", "3"),
+                new Variable("sm_coffin_radius", "200.0", "ZSkill", "棺材半径 (Unit)", "100.0", "9999.9"),
             };
-
-            //new Variable("", "", "", "", "", ""),
         }
 
         #endregion
