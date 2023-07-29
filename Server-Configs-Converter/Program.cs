@@ -8,7 +8,7 @@ namespace Kxnrl.FyS.ConfigConverter
 {
     public class Command
     {
-        public string Cmd;
+        public string   Cmd;
         public string[] Arg;
 
         public Command(string cmd, params string[] arg)
@@ -21,11 +21,13 @@ namespace Kxnrl.FyS.ConfigConverter
         {
             var sb = new StringBuilder(256);
             sb.Append(Cmd);
+
             foreach (var arg in Arg)
             {
                 sb.Append(" ");
                 sb.Append(arg);
             }
+
             return sb.ToString();
         }
     }
@@ -41,34 +43,35 @@ namespace Kxnrl.FyS.ConfigConverter
 
         public Variable(string cvar, string val, string group, string comment, string min = null, string max = null)
         {
-            ConVar = cvar;
-            DefVal = val;
-            Group = group;
+            ConVar  = cvar;
+            DefVal  = val;
+            Group   = group;
             Comment = comment;
-            Min = min;
-            Max = max;
+            Min     = min;
+            Max     = max;
         }
 
         public Variable Clone()
-        {
-            return new Variable(ConVar, DefVal, Group, Comment, Min, Max);
-        }
+            => new Variable(ConVar, DefVal, Group, Comment, Min, Max);
 
-        public override string ToString() => (string.IsNullOrEmpty(Min) && string.IsNullOrEmpty(Max))
-            ? $"// 说  明: {Comment}{Environment.NewLine}{ConVar} \"{DefVal}\"{Environment.NewLine}"
-            : $"// 说  明: {Comment}{Environment.NewLine}// 最小值: {Min}{Environment.NewLine}// 最大值: {Max}{Environment.NewLine}{ConVar} \"{DefVal}\"{Environment.NewLine}";
+        public override string ToString()
+            => string.IsNullOrEmpty(Min) && string.IsNullOrEmpty(Max)
+                ? $"// 说  明: {Comment}{Environment.NewLine}{ConVar} \"{DefVal}\"{Environment.NewLine}"
+                : $"// 说  明: {Comment}{Environment.NewLine}// 最小值: {Min}{Environment.NewLine}// 最大值: {Max}{Environment.NewLine}{ConVar} \"{DefVal}\"{Environment.NewLine}";
     }
 
-    static class Program
+    internal static class Program
     {
-        private const string Versioning = "v4";
+        private const string Versioning = "v5";
 
-        private static readonly string MySelf = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-        private static readonly string Worker = Path.Combine(MySelf, "worker");
-        private static readonly string Output = Path.Combine(MySelf, "output");
+        private static readonly string MySelf = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly()
+                                                                            .Location);
+
+        private static readonly string                             Worker  = Path.Combine(MySelf, "worker");
+        private static readonly string                             Output  = Path.Combine(MySelf, "output");
         private static readonly Dictionary<string, List<Variable>> Configs = new Dictionary<string, List<Variable>>();
 
-        static void Main()
+        private static void Main()
         {
             Console.Title = "Configs Converter by Kyle";
 
@@ -80,22 +83,25 @@ namespace Kxnrl.FyS.ConfigConverter
             var count = 0;
             var succs = 0;
 
-            Directory.GetFiles(Worker, "*.cfg", SearchOption.TopDirectoryOnly).ToList().ForEach(path =>
-            {
-                count++;
+            Directory.GetFiles(Worker, "*.cfg", SearchOption.TopDirectoryOnly)
+                     .ToList()
+                     .ForEach(path =>
+                     {
+                         count++;
 
-                var file = Path.GetFileName(path);
-                try
-                {
-                    ParseConfig(path);
-                    succs++;
-                }
-                catch (Exception e)
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"Parse [{file}] -> {e.Message}{Environment.NewLine}{e.StackTrace}");
-                }
-            });
+                         var file = Path.GetFileName(path);
+
+                         try
+                         {
+                             ParseConfig(path);
+                             succs++;
+                         }
+                         catch (Exception e)
+                         {
+                             Console.ForegroundColor = ConsoleColor.Red;
+                             Console.WriteLine($"Parse [{file}] -> {e.Message}{Environment.NewLine}{e.StackTrace}");
+                         }
+                     });
 
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine($"Processed {succs} / {count} files.");
@@ -105,6 +111,7 @@ namespace Kxnrl.FyS.ConfigConverter
         private static void ParseConfig(string filePath)
         {
             var map = Path.GetFileNameWithoutExtension(filePath);
+
             if (string.IsNullOrEmpty(map))
             {
                 // ?
@@ -122,57 +129,66 @@ namespace Kxnrl.FyS.ConfigConverter
             var mapConf = new Dictionary<string, string>();
             var mapCmds = new List<Command>();
 
-            File.ReadAllLines(filePath, Encoding.UTF8).ToList().ForEach(x =>
-            {
-                var line = x.Trim();
-                if (line.StartsWith("//") || line.Length < 3 || line.ToLower().StartsWith("echo"))
+            File.ReadAllLines(filePath, Encoding.UTF8)
+                .ToList()
+                .ForEach(x =>
                 {
-                    // comment line || blank line
-                    return;
-                }
+                    var line = x.Trim();
 
-                var split = line.IndexOf(' ');
-                if (split == -1)
-                {
-                    // not found
-                    //Console.ForegroundColor = ConsoleColor.Cyan;
-                    //Console.WriteLine($"Failed to parse line {line}");
-                    return;
-                }
+                    if (line.StartsWith("//")
+                        || line.Length < 3
+                        || line.ToLower()
+                               .StartsWith("echo"))
+                    {
+                        // comment line || blank line
+                        return;
+                    }
 
-                // conVar or command
-                var cvar = line.Substring(0, split);
-                var cval = line.Substring(split + 1);
+                    var split = line.IndexOf(' ');
 
-                var quotes = line.Count(c => c == '"');
+                    if (split == -1)
+                    {
+                        // not found
+                        //Console.ForegroundColor = ConsoleColor.Cyan;
+                        //Console.WriteLine($"Failed to parse line {line}");
+                        return;
+                    }
 
-                // it's command
-                if (quotes > 2 && quotes % 2 == 0)
-                {
-                    //Console.ForegroundColor = ConsoleColor.Cyan;
-                    //Console.WriteLine($"Found command [{cvar}] => {cval}");
-                    mapCmds.Add(new Command(cvar, cval.Split(new char[] { ' ' })));
-                    return;
-                }
-                else if (configs.FirstOrDefault(c => c.ConVar == cvar) == null)
-                {
-                    //Console.ForegroundColor = ConsoleColor.Cyan;
-                    //Console.WriteLine($"Invalid convar [{cvar}] => {cval}");
-                    return;
-                }
+                    // conVar or command
+                    var cvar = line.Substring(0, split);
+                    var cval = line.Substring(split + 1);
 
-                cval = cval.Replace("\"", "").Trim();
+                    var quotes = line.Count(c => c == '"');
 
-                if (mapConf.ContainsKey(cvar))
-                {
-                    // already in
-                    //Console.ForegroundColor = ConsoleColor.Cyan;
-                    //Console.WriteLine($"Skip duplicate convar [{cvar}]");
-                    return;
-                }
+                    // it's command
+                    if (quotes > 2 && quotes % 2 == 0)
+                    {
+                        //Console.ForegroundColor = ConsoleColor.Cyan;
+                        //Console.WriteLine($"Found command [{cvar}] => {cval}");
+                        mapCmds.Add(new Command(cvar, cval.Split(new char[] { ' ' })));
 
-                mapConf.Add(cvar, cval);
-            });
+                        return;
+                    }
+                    else if (configs.FirstOrDefault(c => c.ConVar == cvar) == null)
+                    {
+                        //Console.ForegroundColor = ConsoleColor.Cyan;
+                        //Console.WriteLine($"Invalid convar [{cvar}] => {cval}");
+                        return;
+                    }
+
+                    cval = cval.Replace("\"", "")
+                               .Trim();
+
+                    if (mapConf.ContainsKey(cvar))
+                    {
+                        // already in
+                        //Console.ForegroundColor = ConsoleColor.Cyan;
+                        //Console.WriteLine($"Skip duplicate convar [{cvar}]");
+                        return;
+                    }
+
+                    mapConf.Add(cvar, cval);
+                });
 
             var lines = new List<string>
             {
@@ -184,17 +200,19 @@ namespace Kxnrl.FyS.ConfigConverter
                 $"// https://www.kxnrl.com",
                 $"",
                 $"",
-                $""
+                $"",
             };
 
             lines.Add("/////////////////////");
             lines.Add("///    ConVars    ///");
             lines.Add("/////////////////////");
             var group = "";
+
             configs.ForEach(conf =>
             {
                 var convar = conf.Clone();
                 var config = mapConf.FirstOrDefault(c => c.Key == conf.ConVar);
+
                 if (config.Key != null)
                 {
                     convar.DefVal = config.Value;
@@ -230,9 +248,9 @@ namespace Kxnrl.FyS.ConfigConverter
             File.WriteAllLines(Path.Combine(Output, map + "." + "cfg"), lines.ToArray(), new UTF8Encoding(false));
         }
 
-        #region PrepareConfigs
+#region PrepareConfigs
 
-        static void PrepareConfigs()
+        private static void PrepareConfigs()
         {
             Configs["ze"] = new List<Variable>
             {
@@ -242,7 +260,7 @@ namespace Kxnrl.FyS.ConfigConverter
 
                 // Vote
                 new Variable("vips_map_extend_times", "2", "Vote", "VIP延长投票 (次)", "0", "2"),
-                new Variable("mcr_map_extend_times", "2", "Vote", "MCR延长投票 (次)", "0", "2"),
+                new Variable("mcr_map_extend_times",  "2", "Vote", "MCR延长投票 (次)", "0", "2"),
 
                 // Misc
                 new Variable("store_thirdperson_enabled", "1", "Misc", "第三人称视角控制 (开关)", "0", "1"),
@@ -254,23 +272,24 @@ namespace Kxnrl.FyS.ConfigConverter
                 new Variable("zr_infect_spawntime_max", "15", "Core", "尸变倒计时<须与zr_infect_spawntime_min同步> (秒)", "1", "90"),
                 new Variable("zr_infect_spawntime_min", "15", "Core", "尸变倒计时<须与zr_infect_spawntime_max同步> (秒)", "1", "90"),
                 new Variable("zr_knockback_multi", "1.0", "Core", "全局击退系数 (%)", "0.1", "1.5"),
+                new Variable("ze_protection_mzombie_distance", "256.0", "Core", "母体在传送点多少单位附近属于保护距离(u)", "0.0", "10000.0"),
 
                 // Rank
-                new Variable("ze_damage_zombie_cash", "0.4", "Rank", "伤害与金钱转化比例 ($)", "0.1", "3.0"),
-                new Variable("ze_damage_rank_points", "30000", "Rank", "伤害云点转化比例 (云点)", "9999.0", "99999.0"),
-                new Variable("ze_damage_shop_credit", "50000", "Rank", "伤害积分转化比例 (积分)", "9999.0", "99999.0"),
-                new Variable("ze_credits_pass_round", "1", "Rank", "通关所获得的积分 (积分)", "1", "30"),
-                new Variable("rank_ze_win_points_humans", "", "Rank", "通关获得多少云点<人类>", "1", "30"),
+                new Variable("ze_damage_zombie_cash",     "0.4",   "Rank", "伤害与金钱转化比例 ($)", "0.1",    "3.0"),
+                new Variable("ze_damage_rank_points",     "30000", "Rank", "伤害云点转化比例 (云点)", "9999.0", "99999.0"),
+                new Variable("ze_damage_shop_credit",     "50000", "Rank", "伤害积分转化比例 (积分)", "9999.0", "99999.0"),
+                new Variable("ze_credits_pass_round",     "1",     "Rank", "通关所获得的积分 (积分)", "1",      "30"),
+                new Variable("rank_ze_win_points_humans", "",      "Rank", "通关获得多少云点<人类>",  "1",      "30"),
 
                 // Boss HP
-                new Variable("ze_bosshp_display_breakable", "0", "BossHP", "显示可破坏实体的HP (开关)", "0", "1"),
-                new Variable("ze_bosshp_vscript_creation", "0", "BossHP", "地图有使用VScript创建counter (开关)", "0", "1"),
+                new Variable("ze_bosshp_display_breakable", "0", "BossHP", "显示可破坏实体的HP (开关)",            "0", "1"),
+                new Variable("ze_bosshp_vscript_creation",  "0", "BossHP", "地图有使用VScript创建counter (开关)", "0", "1"),
 
                 // entWatch
-                new Variable("ze_newbee_protection_point", "10", "EntWatch", "拾取神器所需的最低云点 (云点)", "500", "10000"),
-                new Variable("entwatch_require_client", "0", "EntWatch", "需要助手以拾取神器", "0", "1"),
-                new Variable("entwatch_allow_use_to_acquire", "0", "EntWatch", "允许按E键拾取神器 (开关)", "0", "1"),
-                new Variable("entwatch_auto_detect_physicsbox", "0", "EntWatch", "允许按E键拾取自动识别PhysicsBox (开关)", "0", "1"),
+                new Variable("ze_newbee_protection_point",      "10", "EntWatch", "拾取神器所需的最低云点 (云点)",           "500", "10000"),
+                new Variable("entwatch_require_client",         "0",  "EntWatch", "需要助手以拾取神器",                  "0",   "1"),
+                new Variable("entwatch_allow_use_to_acquire",   "0",  "EntWatch", "允许按E键拾取神器 (开关)",             "0",   "1"),
+                new Variable("entwatch_auto_detect_physicsbox", "0",  "EntWatch", "允许按E键拾取自动识别PhysicsBox (开关)", "0",   "1"),
 
                 // Glows
                 new Variable("ze_buttons_glow_enabled", "1", "Monitor", "按钮创建高亮透视鸡 (开关)", "0", "1"),
@@ -280,8 +299,8 @@ namespace Kxnrl.FyS.ConfigConverter
                 new Variable("k_fl_enabled", "1", "FlashNvg", "手电筒控制 (开关)", "0", "1"),
 
                 // Save Level
-                new Variable("ze_savelevel_enable", "0", "SaveLevel", "保存地图分数 (开关)", "0", "1"),
-                new Variable("ze_savelevel_filter", "1", "SaveLevel", "分数过滤整数 (开关)", "0", "1"),
+                new Variable("ze_savelevel_enable", "0", "SaveLevel", "保存地图分数 (开关)",     "0", "1"),
+                new Variable("ze_savelevel_filter", "1", "SaveLevel", "分数过滤整数 (开关)",     "0", "1"),
                 new Variable("ze_savelevel_onuser", "0", "SaveLevel", "检测OnUser输出 (开关)", "0", "1"),
                 new Variable("ze_savelevel_multis", "0", "SaveLevel", "多重OnUser输出 (开关)", "0", "1"),
 
@@ -289,33 +308,33 @@ namespace Kxnrl.FyS.ConfigConverter
                 new Variable("ze_grenade_nade_cfeffect", "1", "Grenade", "高爆模式, 0为禁用, 1 = 燃烧, 2 = 减速, 3 = 击退 (开关)", "0", "3"),
 
                 // Weapon
-                new Variable("ze_weapons_awp_counts", "5", "Weapon", "每局最大可购买的Awp数量 (把)", "1", "64"),
-                new Variable("ze_weapons_spawn_hegrenade", "1", "Weapon", "每局开始时补给的高爆数量 (个)", "0", "1"),
-                new Variable("ze_weapons_spawn_molotov", "0", "Weapon", "每局开始时补给的火瓶数量 (个)", "0", "1"),
-                new Variable("ze_weapons_spawn_decoy", "1", "Weapon", "每局开始时补给的冰冻数量 (个)", "0", "1"),
-                new Variable("ze_weapons_round_hegrenade", "3", "Weapon", "每局最多可购买的高爆数量 (个)", "-1", "15"),
-                new Variable("ze_weapons_round_molotov", "1", "Weapon", "每局最多可购买的火瓶数量 (个)", "-1", "10"),
-                new Variable("ze_weapons_round_decoy", "1", "Weapon", "每局最多可购买的冰冻数量 (个)", "-1", "10"),
-                new Variable("ze_weapons_round_flash", "1", "Weapon", "每局最多可购买的屏障数量 (个)", "-1", "10"),
-                new Variable("ze_weapons_round_smoke", "1", "Weapon", "每局最多可购买的磁暴数量 (个)", "-1", "5"),
-                new Variable("ze_weapons_round_tagrenade", "1", "Weapon", "每局最多可购买的黑洞数量 (个)", "-1", "5"),
-                new Variable("ze_weapons_round_healshot", "1", "Weapon", "每局最多可购买的血针数量 (支)", "-1", "5"),
+                new Variable("ze_weapons_awp_counts",      "5", "Weapon", "每局最大可购买的Awp数量 (把)", "1",  "64"),
+                new Variable("ze_weapons_ssg_counts",      "5", "Weapon", "每局最大可购买的SSG数量 (把)", "1",  "64"),
+                new Variable("ze_weapons_spawn_hegrenade", "1", "Weapon", "每局开始时补给的高爆数量 (个)",  "0",  "1"),
+                new Variable("ze_weapons_spawn_molotov",   "0", "Weapon", "每局开始时补给的火瓶数量 (个)",  "0",  "1"),
+                new Variable("ze_weapons_spawn_decoy",     "1", "Weapon", "每局开始时补给的冰冻数量 (个)",  "0",  "1"),
+                new Variable("ze_weapons_round_hegrenade", "3", "Weapon", "每局最多可购买的高爆数量 (个)",  "-1", "20"),
+                new Variable("ze_weapons_round_molotov",   "1", "Weapon", "每局最多可购买的火瓶数量 (个)",  "-1", "15"),
+                new Variable("ze_weapons_round_decoy",     "1", "Weapon", "每局最多可购买的冰冻数量 (个)",  "-1", "15"),
+                new Variable("ze_weapons_round_flash",     "1", "Weapon", "每局最多可购买的屏障数量 (个)",  "-1", "12"),
+                new Variable("ze_weapons_round_smoke",     "1", "Weapon", "每局最多可购买的磁暴数量 (个)",  "-1", "8"),
+                new Variable("ze_weapons_round_tagrenade", "1", "Weapon", "每局最多可购买的黑洞数量 (个)",  "-1", "8"),
+                new Variable("ze_weapons_round_healshot",  "1", "Weapon", "每局最多可购买的血针数量 (支)",  "-1", "8"),
 
                 // ZSkill
                 new Variable("sm_hunter_leappower", "300.0", "ZSkill", "闪灵冲刺推力 (Unit)", "150.0", "500.0"),
-                new Variable("sm_faster_maxspeed", "1.4", "ZSkill", "加速暴发冲力 (%)", "1.1", "2.0"),
-                new Variable("sm_boomer_distance", "300.0", "ZSkill", "唾液射程 (Unit)", "100.0", "999.9"),
-                new Variable("sm_smoker_distance", "500.0", "ZSkill", "勾搭范围 (Unit)", "100.0", "9999.9"),
-                new Variable("sm_blader_damage", "60.0", "ZSkill", "跳刀伤害 (Unit)", "30.0", "5000.0"),
-                new Variable("sm_farter_distance", "350.0", "ZSkill", "毒烟半径 (Unit)", "50.0", "9999.9"),
-                new Variable("sm_finger_distance", "150.0", "ZSkill", "长手射程 (Unit)", "150.0", "9999.9"),
-                new Variable("sm_deimos_targetfx", "3", "ZSkill", "缴械连锁 (人)", "1", "8"),
-                new Variable("sm_deimos_droptype", "1", "ZSkill", "缴械掉落 (0-无, 1-主武器, 2-主武器+任意手雷, 3-主武器+所有手雷", "0", "3"),
-                new Variable("sm_coffin_radius", "200.0", "ZSkill", "棺材半径 (Unit)", "100.0", "9999.9"),
+                new Variable("sm_faster_maxspeed",  "1.4",   "ZSkill", "加速暴发冲力 (%)", "1.1", "2.0"),
+                new Variable("sm_boomer_distance",  "300.0", "ZSkill", "唾液射程 (Unit)", "100.0", "999.9"),
+                new Variable("sm_smoker_distance",  "500.0", "ZSkill", "勾搭范围 (Unit)", "100.0", "9999.9"),
+                new Variable("sm_blader_damage",    "60.0",  "ZSkill", "跳刀伤害 (Unit)", "30.0", "5000.0"),
+                new Variable("sm_farter_distance",  "350.0", "ZSkill", "毒烟半径 (Unit)", "50.0", "9999.9"),
+                new Variable("sm_finger_distance",  "150.0", "ZSkill", "长手射程 (Unit)", "150.0", "9999.9"),
+                new Variable("sm_deimos_targetfx",  "3",     "ZSkill", "缴械连锁 (人)", "1", "8"),
+                new Variable("sm_deimos_droptype",  "1",     "ZSkill", "缴械掉落 (0-无, 1-主武器, 2-主武器+任意手雷, 3-主武器+所有手雷", "0", "3"),
+                new Variable("sm_coffin_radius",    "200.0", "ZSkill", "棺材半径 (Unit)", "100.0", "9999.9"),
             };
         }
 
-        #endregion
-
+#endregion
     }
 }
